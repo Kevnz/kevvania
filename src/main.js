@@ -1,14 +1,19 @@
 import Phaser from 'phaser'
 
 import IntroScene from './scenes/IntroScene'
+import PauseScene from './scenes/PauseScene'
 import LevelOne from './scenes/LevelOneScene'
-const WIDE = 256 * 16
-const HEIGHT = 16 * 16
+import ChangeScene from './scenes/ChangeScene'
+import LevelTwo from './scenes/LevelTwoScene'
+import { SCREEN_WIDTH, FULL_HEIGHT, FULL_WIDTH } from './utils/constants'
 
 const config = {
   type: Phaser.AUTO,
-  width: 16 * 32,
-  height: HEIGHT,
+  width: SCREEN_WIDTH,
+  height: FULL_HEIGHT,
+  input: {
+    gamepad: true,
+  },
   physics: {
     default: 'arcade',
     arcade: {
@@ -16,7 +21,7 @@ const config = {
       gravity: { y: 200 },
     },
   },
-  scene: [IntroScene, LevelOne],
+  scene: [IntroScene, LevelOne, ChangeScene, LevelTwo, PauseScene],
 }
 
 export default new Phaser.Game(config)

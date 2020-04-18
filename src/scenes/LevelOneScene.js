@@ -11,10 +11,18 @@ const PLAYER_KEY = 'player'
 const DEATH_ANIM_KEY = 'please-die'
 
 const ENEMY_KEYS = {
+  HELLCAT: 'hellcat',
   SKELETON: 'skeleton',
+  SKELETON_BOSS: 'skeleton-boss',
   BAT: 'bat-flat',
   WOLF: 'wolf',
   DIE: 'death',
+}
+
+const ENEMY_HP = {
+  [ENEMY_KEYS.SKELETON_BOSS]: 5,
+  [ENEMY_KEYS.SKELETON]: 1,
+  [ENEMY_KEYS.HELLCAT]: 1,
 }
 
 const PLAYER_ANIMS = {
@@ -32,6 +40,7 @@ export default class LevelOneScene extends Phaser.Scene {
   constructor() {
     super('level-one')
     this.background = null
+    this.enemies = null
   }
 
   createPlayer() {
@@ -125,14 +134,15 @@ export default class LevelOneScene extends Phaser.Scene {
     return player
   }
 
-  createSkeleton(x, y) {
-    const skeleton = this.physics.add.sprite(x, y, ENEMY_KEYS.SKELETON)
-
+  createSkeleton(x, y, key = ENEMY_KEYS.SKELETON) {
+    const skeleton = this.physics.add.sprite(x, y, key)
+    skeleton.KEY = key
+    skeleton.HP = ENEMY_HP[key]
     skeleton.setCollideWorldBounds(true)
 
     this.anims.create({
-      key: 'walk',
-      frames: this.anims.generateFrameNumbers(ENEMY_KEYS.SKELETON, {
+      key: `${key}-walk`,
+      frames: this.anims.generateFrameNumbers(key, {
         start: 0,
         end: 7,
       }),
@@ -141,8 +151,8 @@ export default class LevelOneScene extends Phaser.Scene {
     })
 
     this.anims.create({
-      key: 'stay',
-      frames: this.anims.generateFrameNumbers(ENEMY_KEYS.SKELETON, {
+      key: `${key}-stay`,
+      frames: this.anims.generateFrameNumbers(key, {
         start: 8,
         end: 9,
       }),
@@ -150,12 +160,12 @@ export default class LevelOneScene extends Phaser.Scene {
       repeat: -1,
     })
     this.anims.create({
-      key: 'rise',
-      frames: this.anims.generateFrameNumbers(ENEMY_KEYS.SKELETON, {
+      key: `${key}-rise`,
+      frames: this.anims.generateFrameNumbers(key, {
         start: 8,
         end: 14,
       }),
-      frameRate: 2,
+      frameRate: 10,
       repeat: 0,
     })
 
@@ -164,9 +174,9 @@ export default class LevelOneScene extends Phaser.Scene {
     skeleton.body.setOffset(10, 43)
 
     const animComplete = function (event, character, deets) {
-      console.info('event', event)
-      if (event.key === 'rise') {
-        skeleton.anims.play('walk', true)
+      console.info('Skeleton Animation Complete', event)
+      if (event.key === `${key}-rise`) {
+        skeleton.anims.play(`${key}-walk`, true)
         skeleton.body.setSize()
         skeleton.setVelocityX(-10)
       }
@@ -175,6 +185,30 @@ export default class LevelOneScene extends Phaser.Scene {
     skeleton.on('animationcomplete', animComplete, this)
 
     return skeleton
+  }
+
+  createHellcat(x, y) {
+    const hellcat = this.physics.add.sprite(x, y, ENEMY_KEYS.HELLCAT)
+
+    hellcat.setCollideWorldBounds(true)
+
+    this.anims.create({
+      key: 'catwalk',
+      frames: this.anims.generateFrameNumbers(ENEMY_KEYS.HELLCAT, {
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 10,
+      repeat: -1,
+    })
+
+    const animComplete = function (event, character, deets) {
+      console.info('Hellcat Animation Complete', event)
+    }
+
+    hellcat.on('animationcomplete', animComplete, this)
+
+    return hellcat
   }
 
   preload() {
@@ -201,6 +235,22 @@ export default class LevelOneScene extends Phaser.Scene {
         frameHeight: 52,
       }
     )
+    this.load.spritesheet(
+      ENEMY_KEYS.SKELETON_BOSS,
+      'assets/images/entities/skeleton-large.png',
+      {
+        frameWidth: 44 * 3,
+        frameHeight: 52 * 3,
+      }
+    )
+    this.load.spritesheet(
+      ENEMY_KEYS.HELLCAT,
+      'assets/images/entities/hell-cat.png',
+      {
+        frameWidth: 96,
+        frameHeight: 53,
+      }
+    )
     this.load.spritesheet(ENEMY_KEYS.DIE, 'assets/images/entities/death.png', {
       frameWidth: 44,
       frameHeight: 52,
@@ -211,22 +261,21 @@ export default class LevelOneScene extends Phaser.Scene {
     const boom = function (event, character, deets) {
       console.info('Kah BOOM?', event)
       if (event.key === DEATH_ANIM_KEY) {
-        // character.destroy()
         console.log('Dead?', gameObject)
+        gameObject.destroy()
       }
     }
+    gameObject.setVelocityX(0)
 
     gameObject.setTexture(ENEMY_KEYS.DIE)
 
     console.info('fall down, go boom')
+
     gameObject.play(DEATH_ANIM_KEY)
-    gameObject.on('animationcomplete', boom, this)
+    gameObject.once('animationcomplete', boom, this)
   }
 
   create() {
-    // this.background = this.add.image(0, 0, MAIN_BACKGROUND)
-    // this.background.setDisplaySize(800, 600)
-
     const image = this.add.image(
       this.cameras.main.width / 2,
       this.cameras.main.height / 2,
@@ -250,11 +299,9 @@ export default class LevelOneScene extends Phaser.Scene {
 
     map.createStaticLayer('BigObjects', [ground, objects], 0, 0)
     map.createStaticLayer('BigObjects2', [ground, objects], 0, 0)
-    map.createStaticLayer('BigObjectsA', [ground], 0, 0)
-    map.createStaticLayer('BigObjects2A', [ground], 0, 0)
+
     this.player = this.createPlayer()
-    this.player.setBounce(0.1)
-    this.player.setCollideWorldBounds(true)
+
     this.physics.add.collider(this.player, platforms)
 
     this.cursors = this.input.keyboard.createCursorKeys()
@@ -272,33 +319,66 @@ export default class LevelOneScene extends Phaser.Scene {
         start: 0,
         end: 3,
       }),
-      frameRate: 20,
+      frameRate: 40,
       repeat: 0,
+      onComplete: (t, targets, custom) => {
+        t.destroy()
+      },
     })
 
-    this.skeletonGroup = this.physics.add.group({
-      allowGravity: true,
-      immovable: true,
-    })
     // Let's get the spike objects, these are NOT sprites
 
     const skeletonObjects = map.getObjectLayer('Skeletons').objects
-    console.log('seke', skeletonObjects)
+    const hellCatObjects = map.getObjectLayer('HellCats').objects
+    const bossObjects = map.getObjectLayer('Boss').objects
 
-    this.skeletons = skeletonObjects.map(skeletonObject => {
-      console.log('skeletonObject', 16 * 12 + 3)
+    this.enemies = this.physics.add.group()
+
+    this.physics.add.collider(this.enemies, platforms)
+
+    skeletonObjects.forEach((skeletonObject, index) => {
       // Add new skeletons to our sprite group, change the start y position to meet the platform
       // const skeleton = this.skeletons.create(skeletonObject.x, skeletonObject.y - skeletonObject.height - 148, ENEMY_KEYS.SKELETON, 8).setOrigin(0, 0);
+
       const skeleton = this.createSkeleton(
         skeletonObject.x,
-        skeletonObject.y - skeletonObject.height - 148
+        skeletonObject.y - 50
       )
-      this.physics.add.collider(skeleton, platforms)
-      return skeleton
+
+      this.enemies.add(skeleton)
+    })
+
+    bossObjects.forEach(skeletonObject => {
+      const skeleton = this.createSkeleton(
+        skeletonObject.x,
+        30,
+        ENEMY_KEYS.SKELETON_BOSS
+      )
+
+      this.enemies.add(skeleton)
+    })
+
+    this.hellcats = this.physics.add.group()
+    hellCatObjects.forEach(hellCatObject => {
+      // Add new skeletons to our sprite group, change the start y position to meet the platform
+      // const skeleton = this.skeletons.create(skeletonObject.x, skeletonObject.y - skeletonObject.height - 148, ENEMY_KEYS.SKELETON, 8).setOrigin(0, 0);
+      const hellcat = this.createHellcat(
+        hellCatObject.x,
+        hellCatObject.y - hellCatObject.height - 148
+      )
+      this.physics.add.collider(hellcat, platforms)
+
+      this.hellcats.add(hellcat)
     })
 
     function playerHit(player, enemy) {
-      if (player.anims.currentAnim.key === PLAYER_ANIMS.ATTACK1) {
+      console.info('player hit')
+
+      if (
+        player.anims.currentAnim.key === PLAYER_ANIMS.ATTACK1 ||
+        player.anims.currentAnim.key === PLAYER_ANIMS.ATTACK2 ||
+        player.anims.currentAnim.key === PLAYER_ANIMS.ATTACK3
+      ) {
         console.info('DIE MOTHERFUCKER DIE')
         this.dieNow(enemy)
       } else {
@@ -306,6 +386,9 @@ export default class LevelOneScene extends Phaser.Scene {
         player.setX(player.x - 50)
 
         player.play(PLAYER_ANIMS.HIT, true)
+
+        enemy.setVelocity(0, 0)
+        enemy.setX(enemy.x - 50)
       }
       // player.setAlpha(0);
       /*
@@ -321,16 +404,76 @@ export default class LevelOneScene extends Phaser.Scene {
 
     // this.physics.add.collider(this.player, this.skeletors, playerHit, null, this);
 
-    this.physics.add.overlap(this.player, this.skeletons, playerHit, null, this)
+    this.physics.add.collider(
+      this.player,
+      this.skeletons,
+      playerHit,
+      null,
+      this
+    )
+    this.physics.add.collider(this.player, this.hellcats, playerHit, null, this)
+
+    this.events.on('pause', function () {
+      console.log('Scene paused')
+    })
+
+    this.events.on('resume', function () {
+      console.log('Scene A resumed')
+    })
+
+    var callback = function (
+      body,
+      blockedUp,
+      blockedDown,
+      blockedLeft,
+      blockedRight
+    ) {
+      console.info('worldbounds body', body)
+    }
+    this.physics.world.on('worldbounds or collide', callback)
+
+    this.physics.world.on('collide', callback)
+
+    this.input.on(
+      'gameobjectdown',
+      function () {
+        console.log('game object down???')
+      },
+      this
+    )
+    console.info('this input', this.input)
+    this.input.gamepad.on(
+      'down',
+      function (pad, button, index) {
+        console.info('gamepad down', button)
+
+        if (button.index === 9) {
+          this.scene.launch('pause-scene')
+          this.scene.pause()
+        }
+      },
+      this
+    )
+    this.physics.add.collider(this.player, this.enemies, playerHit, null, this)
+
+    const pads = this.input.gamepad.gamepads
+    const gamepad = pads[0] || { buttons: [] }
+    console.info('Gamepad', gamepad)
   }
 
   update() {
-    this.skeletons.forEach(skel => {
+    if (this.player.x > 256 * 16 - 100) {
+      this.scene.start('change-scene')
+    }
+
+    this.enemies.getChildren().forEach(skel => {
+      if (skel === null) return
       if (skel.anims === undefined) {
         return
       }
+
       if (!skel.anims.currentAnim) {
-        skel.anims.play('stay', true)
+        skel.anims.play(`${skel.KEY || ENEMY_KEYS.SKELETON}-stay`, true)
       }
 
       const dist = Phaser.Math.Distance.Between(
@@ -340,14 +483,51 @@ export default class LevelOneScene extends Phaser.Scene {
         skel.y
       )
 
-      if (dist < 150 && skel.anims.currentAnim.key === 'stay') {
+      if (
+        dist < 150 &&
+        skel.anims.currentAnim &&
+        skel.anims.currentAnim.key === `${skel.KEY || ENEMY_KEYS.SKELETON}-stay`
+      ) {
         console.info('distance', dist)
-        skel.anims.play('rise', true)
+        skel.anims.play(`${skel.KEY || ENEMY_KEYS.SKELETON}-rise`, true)
+      }
+
+      if (
+        skel.x < this.player.x &&
+        skel.anims.currentAnim &&
+        skel.anims.currentAnim.key === `${skel.KEY || ENEMY_KEYS.SKELETON}-walk`
+      ) {
+        skel.setVelocityX(10)
+        skel.flipX = true
+      }
+    })
+
+    this.hellcats.getChildren().forEach(kitty => {
+      try {
+        if (kitty === undefined || kitty.anims === undefined) {
+          return
+        }
+        const dist = Phaser.Math.Distance.Between(
+          this.player.x,
+          this.player.y,
+          kitty.x,
+          kitty.y
+        )
+
+        if (dist < 350 && kitty.x > this.player.x) {
+          console.info('distance', dist)
+          kitty.anims.play('catwalk', true)
+          kitty.setVelocityX(-45)
+        } else if (dist < 350 && kitty.x < this.player.x) {
+          kitty.setVelocityX(45)
+          kitty.flipX = true
+        }
+      } catch (err) {
+        console.error('kitty err', err)
       }
     })
     if (this.cursors.up.isDown && this.player.body.onFloor()) {
-      console.log('up')
-      this.player.setVelocityY(-130)
+      this.player.setVelocityY(-100 + (this.cursors.shift.isDown ? -30 : 0))
     }
     const isAttacking = () => {
       return (
@@ -359,7 +539,14 @@ export default class LevelOneScene extends Phaser.Scene {
       )
     }
     if (!isAttacking()) {
-      if (this.cursors.left.isDown) {
+      const pads = this.input.gamepad.gamepads
+      const gamepad = pads[0] || { buttons: [] }
+
+      if (gamepad.start) {
+        console.info('START PRESSED')
+      }
+
+      if (this.cursors.left.isDown || gamepad.left) {
         if (
           this.player.anims.currentAnim &&
           this.player.anims.currentAnim.key !== PLAYER_ANIMS.HIT
@@ -368,7 +555,7 @@ export default class LevelOneScene extends Phaser.Scene {
           this.player.anims.play('left', true)
           this.player.flipX = true
         }
-      } else if (this.cursors.right.isDown) {
+      } else if (this.cursors.right.isDown || gamepad.right) {
         if (
           this.player.anims.currentAnim &&
           this.player.anims.currentAnim.key !== PLAYER_ANIMS.HIT
@@ -395,15 +582,18 @@ export default class LevelOneScene extends Phaser.Scene {
         }
       }
 
-      if (this.cursors.space.isDown && this.cursors.shift.isUp) {
+      if ((this.cursors.space.isDown && this.cursors.shift.isUp) || gamepad.A) {
         this.player.anims.play(PLAYER_ANIMS.ATTACK1, true)
         this.player.setVelocityX(0)
-        this.player.setSize(100)
+        this.player.setSize(80)
       }
-      if (this.cursors.shift.isDown && this.cursors.space.isDown) {
+      if (
+        (this.cursors.shift.isDown && this.cursors.space.isDown) ||
+        gamepad.B
+      ) {
         this.player.setVelocityX(0)
         this.player.anims.play(PLAYER_ANIMS.ATTACK2, true)
-        this.player.setSize(0)
+        this.player.setSize(80)
       }
     }
   }
