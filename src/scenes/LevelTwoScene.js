@@ -1,44 +1,30 @@
 /* eslint-disable spellcheck/spell-checker */
 import Phaser from 'phaser'
+import { PLAYER_KEY, PLAYER_ANIMS } from '../entities/player'
+import FlamingSkull from '../entities/flaming-skull'
+import {
+  MAIN_BACKGROUND,
+  CEMETERY_OBJECTS_KEY,
+  STONE_ANGEL_KEY,
+  CHURCH_TILES_KEY,
+  ENV_TILES_KEY,
+  TWILIGHT_BW_TILES,
+  TWILIGHT_TILES,
+  MAP_KEY,
+  ENEMY_KEYS,
+  DEATH_ANIM_KEY,
+} from '../utils/constants'
 import BaseScene from './BaseScene'
 
-const MAIN_BACKGROUND = 'main-background'
-const MAP_KEY = 'map'
-const CEMETERY_OBJECTS_KEY = 'cemetery-objects'
-const ENV_TILES_KEY = 'env-tiles'
-const CHURCH_TILES_KEY = 'church-tileset'
-const TWILIGHT_BW_TILES = 'twilight-bw-tiles'
-const TWILIGHT_TILES = 'twilight-tiles'
-const STONE_ANGEL_KEY = 'stone-angel'
-
-const PLAYER_KEY = 'player'
-
-const DEATH_ANIM_KEY = 'please-die'
-
-const ENEMY_KEYS = {
-  HELLCAT: 'hellcat',
-  SKELETON: 'skeleton',
-  SKELETON_BOSS: 'skeleton-boss',
-  BAT: 'bat-flat',
-  WOLF: 'wolf',
-  DIE: 'death',
-}
-
-const PLAYER_ANIMS = {
-  RIGHT: 'right',
-  LEFT: 'left',
-  STAND_RIGHT: 'stand-right',
-  STAND_LEFT: 'stand-left',
-  ATTACK1: 'attack1',
-  ATTACK2: 'attack2',
-  ATTACK4: 'attack3',
-  HIT: 'hit',
-}
-
-export default class LevelOneScene extends BaseScene {
+export default class LevelTwoScene extends BaseScene {
   constructor() {
     super('level-two')
+    this.enemies = null
     console.info('LEVEL TWO')
+  }
+
+  createFlamingSkull(x, y) {
+    return new FlamingSkull(this, x, y)
   }
 
   preload() {
@@ -62,19 +48,51 @@ export default class LevelOneScene extends BaseScene {
       frameHeight: 55,
     })
 
+    this.load.spritesheet(
+      ENEMY_KEYS.FLAMING_SKULL,
+      'assets/images/entities/flaming-skull.png',
+      {
+        frameWidth: 64,
+        frameHeight: 64,
+      }
+    )
+
     this.load.spritesheet(ENEMY_KEYS.DIE, 'assets/images/entities/death.png', {
       frameWidth: 44,
       frameHeight: 52,
     })
+
+    this.load.atlas(
+      ENEMY_KEYS.SKELETON_SWORD,
+      'assets/images/entities/skeleton-sword.png',
+      'assets/images/entities/skeleton-sword.json'
+    )
+
+    this.load.atlas(
+      ENEMY_KEYS.BANDIT,
+      'assets/images/entities/heav-bandit-tp.png',
+      'assets/images/entities/heav-bandit-tp.json'
+    )
+
+    // sprite
   }
 
   dieNow(gameObject) {
-    gameObject.setVelocityX(0)
+    const boom = function (event, character, deets) {
+      console.info('Kah BOOM?', event)
+      if (event.key === DEATH_ANIM_KEY) {
+        console.log('Dead?', gameObject)
+        gameObject.destroy()
+      }
+    }
+    gameObject.body.setVelocityX(0)
 
     gameObject.setTexture(ENEMY_KEYS.DIE)
 
     console.info('fall down, go boom')
+
     gameObject.play(DEATH_ANIM_KEY)
+    gameObject.once('animationcomplete', boom, this)
   }
 
   create() {
@@ -125,8 +143,7 @@ export default class LevelOneScene extends BaseScene {
     )
 
     this.player = this.createPlayer()
-    this.player.setBounce(0.1)
-    this.player.setCollideWorldBounds(true)
+
     this.physics.add.collider(this.player, platforms)
 
     this.cursors = this.input.keyboard.createCursorKeys()
@@ -138,15 +155,96 @@ export default class LevelOneScene extends BaseScene {
     // making the camera follow the player
     this.myCam.startFollow(this.player)
 
-    // this.physics.add.collider(this.player, this.skeletors, playerHit, null, this);
-
-    this.events.on('pause', function () {
-      console.log('Scene paused')
+    this.enemies = this.physics.add.group()
+    this.anims.create({
+      key: DEATH_ANIM_KEY,
+      frames: this.anims.generateFrameNumbers(ENEMY_KEYS.DIE, {
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 40,
+      repeat: 0,
+      onComplete: (t, targets, custom) => {
+        t.destroy()
+      },
     })
-
-    this.events.on('resume', function () {
-      console.log('Scene A resumed')
+    this.anims.create({
+      key: 'float',
+      frames: this.anims.generateFrameNumbers(ENEMY_KEYS.FLAMING_SKULL, {
+        start: 0,
+        end: 2,
+      }),
+      frameRate: 5,
+      repeat: -1,
     })
+    const skullDrops = [356, 598, 780, 900]
+    skullDrops.forEach(x => this.createFlamingSkull(x, 140))
+    this.physics.add.collider(this.enemies, platforms)
+
+    function playerHit(player, enemy) {
+      console.info('player hit')
+
+      if (
+        player.anims.currentAnim.key === PLAYER_ANIMS.ATTACK1 ||
+        player.anims.currentAnim.key === PLAYER_ANIMS.ATTACK2 ||
+        player.anims.currentAnim.key === PLAYER_ANIMS.ATTACK3
+      ) {
+        console.info('DIE MOTHERFUCKER DIE')
+        this.dieNow(enemy)
+      } else {
+        player.body.setVelocity(0, 0)
+        player.setX(player.x - 50)
+
+        player.play(PLAYER_ANIMS.HIT, true)
+
+        enemy.body.setVelocity(0, 0)
+        enemy.setX(enemy.x - 50)
+      }
+    }
+    this.physics.add.collider(this.player, this.enemies, playerHit, null, this)
+
+    const skullguy = this.add.sprite(
+      200,
+      200,
+      ENEMY_KEYS.SKELETON_SWORD,
+      'attack2_2.png'
+    )
+    skullguy.setScale(1.3, 1.3)
+
+    const readyFrameNames = this.anims.generateFrameNames(
+      ENEMY_KEYS.SKELETON_SWORD,
+      {
+        start: 1,
+        end: 3,
+        zeroPad: 0,
+        prefix: 'ready_',
+        suffix: '.png',
+      }
+    )
+    const walkFrameNames = this.anims.generateFrameNames(
+      ENEMY_KEYS.SKELETON_SWORD,
+      {
+        start: 1,
+        end: 6,
+        zeroPad: 0,
+        prefix: 'walk_',
+        suffix: '.png',
+      }
+    )
+
+    this.anims.create({
+      key: 'skeleton-sword-ready',
+      frames: readyFrameNames,
+      frameRate: 6,
+      repeat: -1,
+    })
+    this.anims.create({
+      key: 'sketon-sword-walk',
+      frames: walkFrameNames,
+      frameRate: 6,
+      repeat: -1,
+    })
+    skullguy.anims.play('skeleton-sword-ready')
   }
 
   update() {
@@ -158,62 +256,11 @@ export default class LevelOneScene extends BaseScene {
     if (this.cursors.up.isDown && this.player.body.onFloor()) {
       this.player.setVelocityY(-100 + (this.cursors.shift.isDown ? -30 : 0))
     }
-    const isAttacking = () => {
-      return (
-        this.player.anims.currentAnim &&
-        this.player.anims.currentAnim.key &&
-        (this.player.anims.currentAnim.key === PLAYER_ANIMS.ATTACK1 ||
-          this.player.anims.currentAnim.key === PLAYER_ANIMS.ATTACK2 ||
-          this.player.anims.currentAnim.key === PLAYER_ANIMS.ATTACK3)
-      )
-    }
-    if (!isAttacking()) {
-      if (this.cursors.left.isDown) {
-        if (
-          this.player.anims.currentAnim &&
-          this.player.anims.currentAnim.key !== PLAYER_ANIMS.HIT
-        ) {
-          this.player.setVelocityX(-160)
-          this.player.anims.play('left', true)
-          this.player.flipX = true
-        }
-      } else if (this.cursors.right.isDown) {
-        if (
-          this.player.anims.currentAnim &&
-          this.player.anims.currentAnim.key !== PLAYER_ANIMS.HIT
-        ) {
-          this.player.setVelocityX(360)
-          this.player.anims.play('right', true)
-          this.player.flipX = false
-        }
-      } else {
-        this.player.setVelocityX(0)
-        if (
-          (this.player.anims.currentAnim &&
-            this.player.anims.currentAnim.key === PLAYER_ANIMS.RIGHT) ||
-          !this.player.anims.currentAnim
-        ) {
-          this.player.anims.play('stand-right', true)
-          this.player.flipX = false
-        } else if (
-          this.player.anims.currentAnim &&
-          this.player.anims.currentAnim.key === PLAYER_ANIMS.LEFT
-        ) {
-          this.player.anims.play('stand-left', true)
-          this.player.flipX = true
-        }
-      }
 
-      if (this.cursors.space.isDown && this.cursors.shift.isUp) {
-        this.player.anims.play(PLAYER_ANIMS.ATTACK1, true)
-        this.player.setVelocityX(0)
-        this.player.setSize(80)
-      }
-      if (this.cursors.shift.isDown && this.cursors.space.isDown) {
-        this.player.setVelocityX(0)
-        this.player.anims.play(PLAYER_ANIMS.ATTACK2, true)
-        this.player.setSize(80)
-      }
+    for (var i = 0; i < this.enemies.getChildren().length; i++) {
+      var fs = this.enemies.getChildren()[i]
+      fs.update(this.player)
     }
+    this.player.update(this)
   }
 }

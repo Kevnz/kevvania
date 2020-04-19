@@ -1,7 +1,6 @@
 /* eslint-disable spellcheck/spell-checker */
 import Phaser from 'phaser'
-
-const PLAYER_KEY = 'player'
+import Player, { PLAYER_KEY, PLAYER_ANIMS } from '../entities/player'
 
 const DEATH_ANIM_KEY = 'please-die'
 
@@ -14,111 +13,13 @@ const ENEMY_KEYS = {
   DIE: 'death',
 }
 
-const PLAYER_ANIMS = {
-  RIGHT: 'right',
-  LEFT: 'left',
-  STAND_RIGHT: 'stand-right',
-  STAND_LEFT: 'stand-left',
-  ATTACK1: 'attack1',
-  ATTACK2: 'attack2',
-  ATTACK4: 'attack3',
-  HIT: 'hit',
-}
-
 export default class BaseScene extends Phaser.Scene {
   constructor(args) {
     super(args)
   }
 
   createPlayer() {
-    const player = this.physics.add.sprite(100, 150, PLAYER_KEY)
-    player.setSize(34, 48, true)
-    player.setBounce(0.1)
-    player.setCollideWorldBounds(true)
-
-    this.anims.create({
-      key: PLAYER_ANIMS.LEFT,
-      frames: this.anims.generateFrameNumbers(PLAYER_KEY, {
-        start: 8,
-        end: 12,
-      }),
-      frameRate: 10,
-      repeat: -1,
-    })
-    this.anims.create({
-      key: 'right',
-      frames: this.anims.generateFrameNumbers(PLAYER_KEY, {
-        start: 8,
-        end: 17,
-      }),
-      frameRate: 10,
-      repeat: -1,
-    })
-    this.anims.create({
-      key: 'stand-right',
-      frames: this.anims.generateFrameNumbers(PLAYER_KEY, { start: 0, end: 7 }),
-      frameRate: 10,
-      repeat: -1,
-    })
-    this.anims.create({
-      key: 'stand-left',
-      frames: this.anims.generateFrameNumbers(PLAYER_KEY, { start: 0, end: 7 }),
-      frameRate: 10,
-      repeat: -1,
-    })
-    this.anims.create({
-      key: PLAYER_ANIMS.ATTACK1,
-      frames: this.anims.generateFrameNumbers(PLAYER_KEY, {
-        start: 18,
-        end: 23,
-      }),
-      frameRate: 10,
-      repeat: 0,
-    })
-    this.anims.create({
-      key: PLAYER_ANIMS.ATTACK2,
-      frames: this.anims.generateFrameNumbers(PLAYER_KEY, {
-        start: 23,
-        end: 29,
-      }),
-      frameRate: 10,
-      repeat: 0,
-    })
-    this.anims.create({
-      key: PLAYER_ANIMS.ATTACK3,
-      frames: this.anims.generateFrameNumbers(PLAYER_KEY, {
-        start: 30,
-        end: 37,
-      }),
-      frameRate: 10,
-      repeat: 0,
-    })
-
-    this.anims.create({
-      key: PLAYER_ANIMS.HIT,
-      frames: this.anims.generateFrameNumbers(PLAYER_KEY, {
-        start: 45,
-        end: 47,
-      }),
-      frameRate: 10,
-      repeat: 2,
-    })
-
-    const animComplete = function (event, character, deets) {
-      console.info('Animation Event Complete', event)
-      if (
-        event.key === PLAYER_ANIMS.ATTACK2 ||
-        event.key === PLAYER_ANIMS.ATTACK1 ||
-        event.key === PLAYER_ANIMS.ATTACK3 ||
-        event.key === PLAYER_ANIMS.HIT
-      ) {
-        this.player.anims.play('stand-right', true)
-        player.setSize(34, 48, true)
-      }
-    }
-
-    player.on('animationcomplete', animComplete, this)
-    return player
+    return new Player(this, 100, 150)
   }
 
   createSkeleton(x, y) {

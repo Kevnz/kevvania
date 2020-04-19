@@ -17,6 +17,12 @@ export default class PauseScene extends Phaser.Scene {
       },
       this
     )
+
+    this.add.text(110, 110, 'Paused', {
+      fontFamily: '"Times New Roman", Tahoma, serif',
+      fontSize: 78,
+      color: '#E70B91cc',
+    })
   }
 
   update() { }
