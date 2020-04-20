@@ -5,6 +5,7 @@ export const FULL_HEIGHT = 16 * 16
 export const MAIN_BACKGROUND = 'main-background'
 export const MAP_KEY = 'map'
 export const CEMETERY_OBJECTS_KEY = 'cemetery-objects'
+export const CEMETERY_TILES_KEY = 'cemetery-tiles'
 export const ENV_TILES_KEY = 'env-tiles'
 export const CHURCH_TILES_KEY = 'church-tileset'
 export const TWILIGHT_BW_TILES = 'twilight-bw-tiles'
@@ -23,4 +24,9 @@ export const ENEMY_KEYS = {
   FLAMING_SKULL: 'flaming-skull',
   SKELETON_SWORD: 'skeleton-sword',
   BANDIT: 'bandit',
+}
+export const ENEMY_HP = {
+  [ENEMY_KEYS.SKELETON_BOSS]: 5,
+  [ENEMY_KEYS.SKELETON]: 1,
+  [ENEMY_KEYS.HELLCAT]: 1,
 }
