@@ -6,12 +6,15 @@ export default class PauseScene extends Phaser.Scene {
     super('pause-scene')
   }
 
-  create() {
+  create({ pausedScene }) {
+    console.info('pause create', pausedScene)
     this.input.gamepad.on(
       'down',
       function (pad, button, index) {
+        console.log('The pauused')
         if (button.index === 9) {
-          this.scene.resume('level-one')
+          console.log('pause', this.scene)
+          this.scene.resume(pausedScene)
           this.scene.stop()
         }
       },
