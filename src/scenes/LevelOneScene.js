@@ -118,7 +118,6 @@ export default class LevelOneScene extends Phaser.Scene {
     })
 
     const animComplete = function (event, character, deets) {
-      console.info('Animation Event Complete', event)
       if (
         event.key === PLAYER_ANIMS.ATTACK2 ||
         event.key === PLAYER_ANIMS.ATTACK1 ||
