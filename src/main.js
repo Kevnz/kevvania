@@ -2,7 +2,7 @@ import Phaser from 'phaser'
 
 import IntroScene from './scenes/IntroScene'
 import PauseScene from './scenes/PauseScene'
-import LevelOne from './scenes/LevelOneScene'
+import LevelOne from './scenes/level-one-scene'
 import ChangeScene from './scenes/ChangeScene'
 import LevelTwo from './scenes/LevelTwoScene'
 import { SCREEN_WIDTH, FULL_HEIGHT, FULL_WIDTH } from './utils/constants'
