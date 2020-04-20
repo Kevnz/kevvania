@@ -28,6 +28,7 @@ export default class LevelTwoScene extends BaseScene {
   }
 
   preload() {
+    console.info('level 2 preload')
     this.load.image(MAIN_BACKGROUND, 'assets/images/backgrounds/moon.png')
     this.load.image(
       CEMETERY_OBJECTS_KEY,
@@ -96,6 +97,7 @@ export default class LevelTwoScene extends BaseScene {
   }
 
   create() {
+    super.create()
     console.info('CREATE LEVEL TWO')
     const image = this.add.image(
       this.cameras.main.width / 2,
@@ -122,12 +124,7 @@ export default class LevelTwoScene extends BaseScene {
     const platforms = map.createStaticLayer('Platforms', [ground, env], 0, 0)
     platforms.setCollisionByExclusion(-1, true)
 
-    map.createStaticLayer(
-      'Background',
-      [ground, twilightBW, env, stoneAngel],
-      0,
-      0
-    )
+    map.createStaticLayer('Background', [ground, twilightBW, env], 0, 0)
 
     map.createStaticLayer(
       'Background2',
@@ -135,12 +132,7 @@ export default class LevelTwoScene extends BaseScene {
       0,
       0
     )
-    map.createStaticLayer(
-      'PreBackground',
-      [ground, twilightBW, env, stoneAngel],
-      0,
-      0
-    )
+    map.createStaticLayer('PreBackground', [ground, twilightBW, env], 0, 0)
 
     this.player = this.createPlayer()
 
@@ -201,8 +193,14 @@ export default class LevelTwoScene extends BaseScene {
         enemy.setX(enemy.x - 50)
       }
     }
-    this.physics.add.collider(this.player, this.enemies, playerHit, null, this)
-
+    this.physics.add.collider(
+      this.player,
+      this.enemies,
+      this.playerHit,
+      null,
+      this
+    )
+    /*
     const skullguy = this.add.sprite(
       200,
       200,
@@ -245,6 +243,7 @@ export default class LevelTwoScene extends BaseScene {
       repeat: -1,
     })
     skullguy.anims.play('skeleton-sword-ready')
+    */
   }
 
   update() {
