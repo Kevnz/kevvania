@@ -41,10 +41,10 @@ export default class FlamingSkull extends Phaser.GameObjects.Sprite {
       this.body.setVelocityX(15)
       this.flipX = true
     } else if (dist < 125 && this.x > player.x) {
-      this.body.setVelocityX(-45)
+      this.body.setVelocityX(-55)
       this.flipX = false
     } else if (this.x < player.x && dist < 125) {
-      this.body.setVelocityX(45)
+      this.body.setVelocityX(55)
       this.flipX = true
     } else {
       this.body.setVelocityX(0)
