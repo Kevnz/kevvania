@@ -12,7 +12,7 @@ export default class Skeleton extends Phaser.GameObjects.Sprite {
     this.body.setCollideWorldBounds(true)
 
     this.KEY = key
-    this.HP = 1 // ENEMY_HP[key]
+    this.HP = ENEMY_HP[key]
     scene.anims.create({
       key: `${key}-walk`,
       frames: scene.anims.generateFrameNumbers(key, {
@@ -42,10 +42,10 @@ export default class Skeleton extends Phaser.GameObjects.Sprite {
       repeat: 0,
     })
 
-    this.body.setSize(12, 8)
-
-    this.body.setOffset(10, 43)
-
+    if (key === ENEMY_KEYS.SKELETON) {
+      this.body.setSize(12, 8)
+      this.body.setOffset(10, 43)
+    }
     const animComplete = function (event, character, deets) {
       if (event.key === `${key}-rise`) {
         this.anims.play(`${key}-walk`, true)
