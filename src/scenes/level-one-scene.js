@@ -133,7 +133,7 @@ export default class LevelOneScene extends BaseScene {
     })
 
     bossObjects.forEach(skeletonObject => {
-      this.createSkeleton(skeletonObject.x, 30, ENEMY_KEYS.SKELETON_BOSS)
+      this.createSkeleton(skeletonObject.x, 50, ENEMY_KEYS.SKELETON_BOSS)
     })
 
     hellCatObjects.forEach(hellCatObject => {
@@ -144,10 +144,15 @@ export default class LevelOneScene extends BaseScene {
     })
 
     this.physics.add.collider(this.enemies, platforms)
-    function playerHit(player, enemy) {
-      console.info('player hit')
-    }
+
     this.physics.add.collider(
+      this.player,
+      this.enemies,
+      this.playerHit,
+      null,
+      this
+    )
+    this.physics.add.overlap(
       this.player,
       this.enemies,
       this.playerHit,
@@ -167,7 +172,6 @@ export default class LevelOneScene extends BaseScene {
     }
     this.player.update(this)
     this.enemies.getChildren().forEach(enemy => {
-      // console.log('enemy', enemy)
       enemy.update(this.player)
     })
   }
