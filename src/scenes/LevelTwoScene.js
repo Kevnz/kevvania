@@ -2,6 +2,7 @@
 import Phaser from 'phaser'
 import { PLAYER_KEY, PLAYER_ANIMS } from '../entities/player'
 import FlamingSkull from '../entities/flaming-skull'
+import Bandit from '../entities/bandit'
 import {
   MAIN_BACKGROUND,
   CEMETERY_OBJECTS_KEY,
@@ -9,10 +10,10 @@ import {
   CHURCH_TILES_KEY,
   ENV_TILES_KEY,
   TWILIGHT_BW_TILES,
-  TWILIGHT_TILES,
-  MAP_KEY,
+  LEVEL_2_MAP_KEY,
   ENEMY_KEYS,
   DEATH_ANIM_KEY,
+  CASTLE_EXTERIOR_KEY,
 } from '../utils/constants'
 import BaseScene from './BaseScene'
 
@@ -25,6 +26,10 @@ export default class LevelTwoScene extends BaseScene {
 
   createFlamingSkull(x, y) {
     return new FlamingSkull(this, x, y)
+  }
+
+  createBandit(x, y) {
+    return new Bandit(this, x, y)
   }
 
   preload() {
@@ -41,8 +46,12 @@ export default class LevelTwoScene extends BaseScene {
       TWILIGHT_BW_TILES,
       'assets/images/tiles/twilight-bw-tiles.png'
     )
-    this.load.image(TWILIGHT_TILES, 'assets/images/tiles/twilight-tiles.png')
-    this.load.tilemapTiledJSON(MAP_KEY, 'assets/tiled/level-2.json')
+    this.load.image(
+      CASTLE_EXTERIOR_KEY,
+      'assets/images/tiles/castle_tileset_part1.png'
+    )
+
+    this.load.tilemapTiledJSON(LEVEL_2_MAP_KEY, 'assets/tiled/level-2-a.json')
 
     this.load.spritesheet(PLAYER_KEY, 'assets/images/entities/HeroKnight.png', {
       frameWidth: 100,
@@ -112,16 +121,25 @@ export default class LevelTwoScene extends BaseScene {
     this.cameras.main.setBounds(0, 0, 256 * 16, 16 * 16)
     this.physics.world.setBounds(0, 0, 256 * 16, 16 * 16)
 
-    const map = this.make.tilemap({ key: MAP_KEY })
+    const map = this.make.tilemap({ key: LEVEL_2_MAP_KEY })
     const ground = map.addTilesetImage('church-tileset', CHURCH_TILES_KEY)
     const env = map.addTilesetImage('env-tiles', ENV_TILES_KEY)
     const twilightBW = map.addTilesetImage(
       'twilight-bw-tiles',
       TWILIGHT_BW_TILES
     )
+    const castleTiles = map.addTilesetImage(
+      CASTLE_EXTERIOR_KEY,
+      CASTLE_EXTERIOR_KEY
+    )
     const stoneAngel = map.addTilesetImage('stone-angel', STONE_ANGEL_KEY)
 
-    const platforms = map.createStaticLayer('Platforms', [ground, env], 0, 0)
+    const platforms = map.createStaticLayer(
+      'Platforms',
+      [ground, env, castleTiles],
+      0,
+      0
+    )
     platforms.setCollisionByExclusion(-1, true)
 
     map.createStaticLayer('Background', [ground, twilightBW, env], 0, 0)
@@ -134,6 +152,7 @@ export default class LevelTwoScene extends BaseScene {
     )
     map.createStaticLayer('PreBackground', [ground, twilightBW, env], 0, 0)
 
+    map.createStaticLayer('Castle', [castleTiles], 0, 0)
     this.player = this.createPlayer()
 
     this.physics.add.collider(this.player, platforms)
@@ -244,6 +263,8 @@ export default class LevelTwoScene extends BaseScene {
     })
     skullguy.anims.play('skeleton-sword-ready')
     */
+
+    const b = this.createBandit(200, 200)
   }
 
   update() {
