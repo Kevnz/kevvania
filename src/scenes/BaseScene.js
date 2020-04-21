@@ -133,35 +133,40 @@ export default class BaseScene extends Phaser.Scene {
       player.anims.currentAnim.key === PLAYER_ANIMS.ATTACK2 ||
       player.anims.currentAnim.key === PLAYER_ANIMS.ATTACK3
     ) {
-      this.dieNow(enemy)
+      enemy.HP = enemy.HP - 1
+      if (enemy.HP === 0) {
+        this.dieNow(enemy)
+      } else {
+        if (enemy.beenHit) {
+          enemy.beenHit(player)
+        }
+        enemy.body.setVelocity(0, 0)
+        enemy.setX(enemy.x + 20)
+        enemy.alpha = 0
+        const tw = this.tweens.add({
+          targets: enemy,
+          alpha: 1,
+          duration: 100,
+          ease: 'Linear',
+          repeat: 5,
+        })
+      }
     } else {
+      if (enemy.playerHit) {
+        enemy.playerHit(player)
+      }
       player.body.setVelocity(0, 0)
-      player.setX(player.x - 50)
+      player.setX(player.x - 10)
 
       player.play(PLAYER_ANIMS.HIT, true)
 
       enemy.body.setVelocity(0, 0)
-      enemy.setX(enemy.x - 50)
+      enemy.setX(enemy.x + 50)
     }
-  }
-
-  dieNow2(gameObject) {
-    const boom = function (event, character, deets) {
-      console.info('Kah BOOM?', event)
-      if (event.key === DEATH_ANIM_KEY) {
-        // character.destroy()
-        console.log('Dead?', gameObject)
-      }
-    }
-    gameObject.setVelocityX(0)
-
-    gameObject.setTexture(ENEMY_KEYS.DIE)
-
-    console.info('fall down, go boom')
-    gameObject.play(DEATH_ANIM_KEY)
   }
 
   dieNow(gameObject) {
+    if (gameObject.DEAD) return
     const boom = function (event, character, deets) {
       console.info('Kah BOOM?', event)
       if (event.key === DEATH_ANIM_KEY) {
@@ -173,7 +178,7 @@ export default class BaseScene extends Phaser.Scene {
     gameObject.setTexture(ENEMY_KEYS.DIE)
 
     console.info('fall down, go boom')
-
+    gameObject.DEAD = true
     gameObject.play(DEATH_ANIM_KEY)
     gameObject.once('animationcomplete', boom, this)
   }
@@ -189,79 +194,5 @@ export default class BaseScene extends Phaser.Scene {
       },
       this
     )
-  }
-
-  update() {
-    if (this.player.x > 256 * 16 - 100) {
-      console.info('bounds???')
-      this.scene.start('change-scene')
-    }
-
-    if (this.cursors.up.isDown && this.player.body.onFloor()) {
-      this.player.setVelocityY(-100 + (this.cursors.shift.isDown ? -30 : 0))
-    }
-    const isAttacking = () => {
-      return (
-        this.player.anims.currentAnim &&
-        this.player.anims.currentAnim.key &&
-        (this.player.anims.currentAnim.key === PLAYER_ANIMS.ATTACK1 ||
-          this.player.anims.currentAnim.key === PLAYER_ANIMS.ATTACK2 ||
-          this.player.anims.currentAnim.key === PLAYER_ANIMS.ATTACK3)
-      )
-    }
-    if (!isAttacking()) {
-      const pads = this.input.gamepad.gamepads
-      const gamepad = pads[0] || {}
-
-      if (this.cursors.left.isDown || gamepad.left) {
-        if (
-          this.player.anims.currentAnim &&
-          this.player.anims.currentAnim.key !== PLAYER_ANIMS.HIT
-        ) {
-          this.player.setVelocityX(-160)
-          this.player.anims.play('left', true)
-          this.player.flipX = true
-        }
-      } else if (this.cursors.right.isDown || gamepad.right) {
-        if (
-          this.player.anims.currentAnim &&
-          this.player.anims.currentAnim.key !== PLAYER_ANIMS.HIT
-        ) {
-          this.player.setVelocityX(360)
-          this.player.anims.play('right', true)
-          this.player.flipX = false
-        }
-      } else {
-        this.player.setVelocityX(0)
-        if (
-          (this.player.anims.currentAnim &&
-            this.player.anims.currentAnim.key === PLAYER_ANIMS.RIGHT) ||
-          !this.player.anims.currentAnim
-        ) {
-          this.player.anims.play('stand-right', true)
-          this.player.flipX = false
-        } else if (
-          this.player.anims.currentAnim &&
-          this.player.anims.currentAnim.key === PLAYER_ANIMS.LEFT
-        ) {
-          this.player.anims.play('stand-left', true)
-          this.player.flipX = true
-        }
-      }
-
-      if ((this.cursors.space.isDown && this.cursors.shift.isUp) || gamepad.A) {
-        this.player.anims.play(PLAYER_ANIMS.ATTACK1, true)
-        this.player.setVelocityX(0)
-        this.player.setSize(80)
-      }
-      if (
-        (this.cursors.shift.isDown && this.cursors.space.isDown) ||
-        gamepad.B
-      ) {
-        this.player.setVelocityX(0)
-        this.player.anims.play(PLAYER_ANIMS.ATTACK2, true)
-        this.player.setSize(80)
-      }
-    }
   }
 }
