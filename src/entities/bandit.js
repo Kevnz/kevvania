@@ -8,35 +8,49 @@ const BANDIT_ANIM_KEYS = {
   ATTACK: 'bandit-attack',
   COMBAT_IDLE: 'bandit-combat-idle',
 }
+const BANDIT_STATES = Object.assign({}, BANDIT_ANIM_KEYS, {
+  DEAD: 'bandit-dead',
+})
 
 export default class Bandit extends Phaser.GameObjects.Sprite {
   constructor(scene, x, y) {
     super(scene, x, y, ENEMY_KEYS.BANDIT)
-    // this.setCollideWorldBounds(true)
+
     scene.add.existing(this)
     this.KEY = ENEMY_KEYS.BANDIT
-    this.HP = ENEMY_HP[ENEMY_KEYS.BANDIT]
-
-    // 3.3
+    this.HIT_POINTS = ENEMY_HP[ENEMY_KEYS.BANDIT]
+    this.BEING_HIT = false
+    this.STATE = BANDIT_STATES.IDLE
 
     scene.physics.world.enableBody(this)
 
     const animationCompleteHandler = function (event, character, deets) {
-      console.info('Bandit Animation Complete', event)
-
+      console.info('animation comp handler')
       if (event.key === DEATH_ANIM_KEY) {
         console.info('Bandit Die Now Please')
         this.destroy()
       }
-      if (event.key === BANDIT_ANIM_KEYS.HURT) {
+      if (this.HIT_POINTS < 1 && event.key === BANDIT_ANIM_KEYS.HURT) {
+        this.anims.play(DEATH_ANIM_KEY)
+        this.BEING_HIT = false
+      } else if (event.key === BANDIT_ANIM_KEYS.HURT) {
+        this.BEING_HIT = false
         this.anims.play(BANDIT_ANIM_KEYS.COMBAT_IDLE)
+      }
+    }
+    const animationStartHandler = function (animation, frame, entity) {
+      console.info('animation start handler')
+
+      if (animation.key === BANDIT_ANIM_KEYS.ATTACK) {
+        this.STATE = BANDIT_STATES.ATTACK
+      }
+      if (animation.key === BANDIT_ANIM_KEYS.HURT) {
+        this.STATE = BANDIT_STATES.HURT
       }
     }
 
     this.on('animationcomplete', animationCompleteHandler, this)
-
-    scene.enemies.add(this)
-
+    this.on('animationstart', animationStartHandler, this)
     this.setScale(1.25, 1.25)
 
     const idleFrameNames = scene.anims.generateFrameNames(ENEMY_KEYS.BANDIT, {
@@ -70,7 +84,7 @@ export default class Bandit extends Phaser.GameObjects.Sprite {
         suffix: '.png',
       }
     )
-    // HeavyBandit_Hurt_0
+
     const hurtFrameNames = scene.anims.generateFrameNames(ENEMY_KEYS.BANDIT, {
       start: 0,
       end: 3,
@@ -112,8 +126,12 @@ export default class Bandit extends Phaser.GameObjects.Sprite {
   }
 
   beenHit(player) {
-    console.info('the bandit has been hit')
+    if (this.anims.currentAnim.key === 'please-die') return
     this.anims.play(BANDIT_ANIM_KEYS.HURT)
+  }
+
+  hasDeath() {
+    return true
   }
 
   update(player) {
@@ -128,6 +146,7 @@ export default class Bandit extends Phaser.GameObjects.Sprite {
 
     if (dist < 50 && this.anims.currentAnim.key !== BANDIT_ANIM_KEYS.ATTACK) {
       this.body.setVelocityX(0)
+      this.STATE = BANDIT_STATES.ATTACK
       this.anims.play(BANDIT_ANIM_KEYS.ATTACK)
     } else if (
       dist < 200 &&
@@ -135,17 +154,20 @@ export default class Bandit extends Phaser.GameObjects.Sprite {
       this.anims.currentAnim.key !== BANDIT_ANIM_KEYS.RUN
     ) {
       this.anims.play(BANDIT_ANIM_KEYS.RUN)
+      this.STATE = BANDIT_STATES.RUN
       this.body.setVelocityX(-55)
     } else if (
       dist < 350 &&
       dist > 200 &&
       this.anims.currentAnim.key !== BANDIT_ANIM_KEYS.COMBAT_IDLE
     ) {
+      this.STATE = BANDIT_STATES.IDLE
       this.anims.play(BANDIT_ANIM_KEYS.COMBAT_IDLE)
     } else if (
       dist > 350 &&
       this.anims.currentAnim.key !== BANDIT_ANIM_KEYS.IDLE
     ) {
+      this.STATE = BANDIT_STATES.IDLE
       this.anims.play(BANDIT_ANIM_KEYS.IDLE)
     }
   }
