@@ -2,6 +2,7 @@
 import Phaser from 'phaser'
 import { PLAYER_KEY, PLAYER_ANIMS } from '../entities/player'
 import FlamingSkull from '../entities/flaming-skull'
+import SkeletonWarrior from '../entities/skeletal-warrior'
 import Bandit from '../entities/bandit'
 import {
   MAIN_BACKGROUND,
@@ -21,15 +22,21 @@ export default class LevelTwoScene extends BaseScene {
   constructor() {
     super('level-two')
     this.enemies = null
-    console.info('LEVEL TWO')
   }
 
   createFlamingSkull(x, y) {
-    return new FlamingSkull(this, x, y)
+    const f = new FlamingSkull(this, x, y)
+    this.enemies.add(f)
+  }
+
+  createSkeletonWarriors(x, y) {
+    const f = new SkeletonWarrior(this, x, y)
+    this.enemies.add(f)
   }
 
   createBandit(x, y) {
-    return new Bandit(this, x, y)
+    const b = new Bandit(this, x, y)
+    this.enemies.add(b)
   }
 
   preload() {
@@ -73,8 +80,8 @@ export default class LevelTwoScene extends BaseScene {
     })
 
     this.load.atlas(
-      ENEMY_KEYS.SKELETON_SWORD,
-      'assets/images/entities/skeleton-sword.png',
+      ENEMY_KEYS.SKELETON_WARRIOR,
+      'assets/images/entities/skeleton-sword-0.png',
       'assets/images/entities/skeleton-sword.json'
     )
 
@@ -89,25 +96,23 @@ export default class LevelTwoScene extends BaseScene {
 
   dieNow(gameObject) {
     const boom = function (event, character, deets) {
-      console.info('Kah BOOM?', event)
       if (event.key === DEATH_ANIM_KEY) {
-        console.log('Dead?', gameObject)
         gameObject.destroy()
       }
     }
     gameObject.body.setVelocityX(0)
 
     gameObject.setTexture(ENEMY_KEYS.DIE)
-
-    console.info('fall down, go boom')
-
-    gameObject.play(DEATH_ANIM_KEY)
+    // if (gameObject.KEY === 'bandit') return
     gameObject.once('animationcomplete', boom, this)
+    if (gameObject) {
+      gameObject.play(DEATH_ANIM_KEY)
+    }
   }
 
   create() {
     super.create()
-    console.info('CREATE LEVEL TWO')
+
     const image = this.add.image(
       this.cameras.main.width / 2,
       this.cameras.main.height / 2,
@@ -192,26 +197,6 @@ export default class LevelTwoScene extends BaseScene {
     skullDrops.forEach(x => this.createFlamingSkull(x, 140))
     this.physics.add.collider(this.enemies, platforms)
 
-    function playerHit(player, enemy) {
-      console.info('player hit')
-
-      if (
-        player.anims.currentAnim.key === PLAYER_ANIMS.ATTACK1 ||
-        player.anims.currentAnim.key === PLAYER_ANIMS.ATTACK2 ||
-        player.anims.currentAnim.key === PLAYER_ANIMS.ATTACK3
-      ) {
-        console.info('DIE MOTHERFUCKER DIE')
-        this.dieNow(enemy)
-      } else {
-        player.body.setVelocity(0, 0)
-        player.setX(player.x - 50)
-
-        player.play(PLAYER_ANIMS.HIT, true)
-
-        enemy.body.setVelocity(0, 0)
-        enemy.setX(enemy.x - 50)
-      }
-    }
     this.physics.add.collider(
       this.player,
       this.enemies,
@@ -219,52 +204,20 @@ export default class LevelTwoScene extends BaseScene {
       null,
       this
     )
-    /*
-    const skullguy = this.add.sprite(
-      200,
-      200,
-      ENEMY_KEYS.SKELETON_SWORD,
-      'attack2_2.png'
-    )
-    skullguy.setScale(1.3, 1.3)
-
-    const readyFrameNames = this.anims.generateFrameNames(
-      ENEMY_KEYS.SKELETON_SWORD,
-      {
-        start: 1,
-        end: 3,
-        zeroPad: 0,
-        prefix: 'ready_',
-        suffix: '.png',
-      }
-    )
-    const walkFrameNames = this.anims.generateFrameNames(
-      ENEMY_KEYS.SKELETON_SWORD,
-      {
-        start: 1,
-        end: 6,
-        zeroPad: 0,
-        prefix: 'walk_',
-        suffix: '.png',
-      }
+    /* */
+    this.physics.add.overlap(
+      this.player,
+      this.enemies,
+      this.playerHit,
+      null,
+      this
     )
 
-    this.anims.create({
-      key: 'skeleton-sword-ready',
-      frames: readyFrameNames,
-      frameRate: 6,
-      repeat: -1,
-    })
-    this.anims.create({
-      key: 'sketon-sword-walk',
-      frames: walkFrameNames,
-      frameRate: 6,
-      repeat: -1,
-    })
-    skullguy.anims.play('skeleton-sword-ready')
-    */
+    const banditDrops = [1150, 1320, 1600, 2100]
+    banditDrops.forEach(x => this.createBandit(x, 200))
 
-    const b = this.createBandit(200, 200)
+    const skeletonWarriorDrops = [2400, 2550, 3000]
+    skeletonWarriorDrops.forEach(x => this.createSkeletonWarriors(x, 200))
   }
 
   update() {
