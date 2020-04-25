@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { SCREEN_WIDTH, FULL_HEIGHT } from '../utils/constants'
+import { SCREEN_WIDTH, FULL_HEIGHT, PLAYER_KEY } from '../utils/constants'
 const MAIN_BACKGROUND = 'main-background'
 
 export default class IntroScene extends Phaser.Scene {
@@ -62,6 +62,9 @@ export default class IntroScene extends Phaser.Scene {
       }
       if (gamepad.A) {
         this.scene.start('level-two')
+      }
+      if (gamepad.X) {
+        this.scene.start('level-three')
       }
     }
   }
