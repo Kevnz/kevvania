@@ -10,9 +10,9 @@ export default class Skeleton extends Phaser.GameObjects.Sprite {
     scene.physics.world.enableBody(this)
 
     this.body.setCollideWorldBounds(true)
-
+    this.BEING_HIT = false
     this.KEY = key
-    this.HP = ENEMY_HP[key]
+    this.HIT_POINTS = ENEMY_HP[key]
     scene.anims.create({
       key: `${key}-walk`,
       frames: scene.anims.generateFrameNumbers(key, {
@@ -56,8 +56,6 @@ export default class Skeleton extends Phaser.GameObjects.Sprite {
     }
 
     this.on('animationcomplete', animComplete, this)
-
-    scene.enemies.add(this)
   }
 
   startCyle() { }
