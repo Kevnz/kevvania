@@ -4,10 +4,11 @@ import { ENEMY_KEYS, DEATH_ANIM_KEY, ENEMY_HP } from '../utils/constants'
 export default class FlamingSkull extends Phaser.GameObjects.Sprite {
   constructor(scene, x, y) {
     super(scene, x, y, ENEMY_KEYS.FLAMING_SKULL)
+    this.BEING_HIT = false
     // this.setCollideWorldBounds(true)
     scene.add.existing(this)
     this.KEY = ENEMY_KEYS.FLAMING_SKULL
-    this.HP = ENEMY_HP[ENEMY_KEYS.FLAMING_SKULL]
+    this.HIT_POINTS = ENEMY_HP[ENEMY_KEYS.FLAMING_SKULL]
 
     // 3.3
     this.play('float')
@@ -24,7 +25,6 @@ export default class FlamingSkull extends Phaser.GameObjects.Sprite {
     }
     this.anims.play('float', true)
     this.on('animationcomplete', animationCompleteHandler, this)
-    scene.enemies.add(this)
   }
 
   update(player) {
