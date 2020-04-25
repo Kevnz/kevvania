@@ -10,9 +10,9 @@ export default class HellCat extends Phaser.GameObjects.Sprite {
     this.body.setCollideWorldBounds(true)
 
     scene.enemies.add(this)
-
+    this.BEING_HIT = false
     this.KEY = ENEMY_KEYS.HELLCAT
-    this.HP = ENEMY_HP[ENEMY_KEYS.HELLCAT]
+    this.HIT_POINTS = ENEMY_HP[ENEMY_KEYS.HELLCAT]
 
     scene.anims.create({
       key: 'catwalk',
