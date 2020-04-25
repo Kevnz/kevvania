@@ -23,71 +23,23 @@ const ENEMY_HP = {
 export default class BaseScene extends Phaser.Scene {
   constructor(args) {
     super(args)
+    this.enemies = null
   }
 
-  createPlayer() {
-    return new Player(this, 100, 150)
+  createPlayer(x = 100, y = 150) {
+    console.log('put player at ', x)
+    return new Player(this, x, y)
   }
 
   //
   createSkeleton(x, y, key = ENEMY_KEYS.SKELETON) {
-    new Skeleton(this, x, y, key)
-  }
-
-  createSkeletonOld(x, y, key = ENEMY_KEYS.SKELETON) {
-    const skeleton = this.physics.add.sprite(x, y, key)
-    skeleton.KEY = key
-    skeleton.HP = ENEMY_HP[key]
-    skeleton.setCollideWorldBounds(true)
-
-    this.anims.create({
-      key: `${key}-walk`,
-      frames: this.anims.generateFrameNumbers(key, {
-        start: 0,
-        end: 7,
-      }),
-      frameRate: 10,
-      repeat: -1,
-    })
-
-    this.anims.create({
-      key: `${key}-stay`,
-      frames: this.anims.generateFrameNumbers(key, {
-        start: 8,
-        end: 9,
-      }),
-      frameRate: 2,
-      repeat: -1,
-    })
-    this.anims.create({
-      key: `${key}-rise`,
-      frames: this.anims.generateFrameNumbers(key, {
-        start: 8,
-        end: 14,
-      }),
-      frameRate: 10,
-      repeat: 0,
-    })
-
-    skeleton.body.setSize(12, 8)
-
-    skeleton.body.setOffset(10, 43)
-
-    const animComplete = function (event, character, deets) {
-      if (event.key === `${key}-rise`) {
-        skeleton.anims.play(`${key}-walk`, true)
-        skeleton.body.setSize()
-        skeleton.setVelocityX(-10)
-      }
-    }
-
-    skeleton.on('animationcomplete', animComplete, this)
-
-    return skeleton
+    const c = new Skeleton(this, x, y, key)
+    this.enemies.add(c)
   }
 
   createHellcat(x, y) {
-    new HellCat(this, x, y, ENEMY_KEYS.HELLCAT)
+    const h = new HellCat(this, x, y, ENEMY_KEYS.HELLCAT)
+    this.enemies.add(h)
   }
 
   preload() {
@@ -126,16 +78,34 @@ export default class BaseScene extends Phaser.Scene {
   }
 
   playerHit(player, enemy) {
-    console.info('player hit')
+    console.info('enemy hit points', enemy.HIT_POINTS)
 
+    console.info('enemy hit', enemy.KEY)
+    if (enemy.BEING_HIT || player.BEING_HIT) {
+      console.info('someone has already been hit')
+      console.info('enemy? has already been hit', enemy.BEING_HIT)
+      console.info('player? has already been hit', player.BEING_HIT)
+
+      return
+    }
     if (
       player.anims.currentAnim.key === PLAYER_ANIMS.ATTACK1 ||
       player.anims.currentAnim.key === PLAYER_ANIMS.ATTACK2 ||
       player.anims.currentAnim.key === PLAYER_ANIMS.ATTACK3
     ) {
-      enemy.HP = enemy.HP - 1
-      if (enemy.HP === 0) {
-        this.dieNow(enemy)
+      console.info('enemy is being hit')
+      enemy.BEING_HIT = true
+      enemy.HIT_POINTS = enemy.HIT_POINTS - 1
+      console.info('enemy hit points', enemy.HIT_POINTS)
+      if (enemy.HIT_POINTS < 1) {
+        console.info('die')
+        enemy.DEAD = true
+
+        if (!enemy.hasDeath) {
+          this.dieNow(enemy)
+        } else {
+          enemy.beenHit(player)
+        }
       } else {
         if (enemy.beenHit) {
           enemy.beenHit(player)
@@ -149,9 +119,13 @@ export default class BaseScene extends Phaser.Scene {
           duration: 100,
           ease: 'Linear',
           repeat: 5,
+          onComplete: function () {
+            enemy.BEING_HIT = false
+          },
         })
       }
     } else {
+      player.BEING_HIT = true
       if (enemy.playerHit) {
         enemy.playerHit(player)
       }
