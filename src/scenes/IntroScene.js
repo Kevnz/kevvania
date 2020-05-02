@@ -1,5 +1,10 @@
 import Phaser from 'phaser'
-import { SCREEN_WIDTH, FULL_HEIGHT, PLAYER_KEY } from '../utils/constants'
+import {
+  SCREEN_WIDTH,
+  FULL_HEIGHT,
+  PLAYER_KEY,
+  SCENES,
+} from '../utils/constants'
 const MAIN_BACKGROUND = 'main-background'
 
 export default class IntroScene extends Phaser.Scene {
@@ -8,9 +13,7 @@ export default class IntroScene extends Phaser.Scene {
     this.background = null
   }
 
-  preload() {
-    this.load.image(MAIN_BACKGROUND, 'assets/images/backgrounds/moon.png')
-  }
+  preload() { }
 
   create() {
     // this.background = this.add.image(0, 0, MAIN_BACKGROUND)
@@ -26,11 +29,16 @@ export default class IntroScene extends Phaser.Scene {
     const scale = Math.max(scaleX, scaleY)
     image.setScale(scale).setScrollFactor(0)
     this.add.text(110, 110, 'KevVania', {
-      fontFamily: '"Times New Roman", Tahoma, serif',
+      fontFamily: 'deutsch_gothicnormal, "Times New Roman", Tahoma, serif',
       fontSize: 78,
       color: '#E70B91',
     })
     this.cursors = this.input.keyboard.createCursorKeys()
+
+    this.music = this.sound.add('intro-audio')
+
+    this.music.play()
+    this.music.setVolume(0.5)
   }
 
   update() {
@@ -58,13 +66,22 @@ export default class IntroScene extends Phaser.Scene {
         console.info('down')
       }
       if (gamepad.B) {
-        this.scene.start('level-one')
+        this.music.stop()
+        this.scene.start(SCENES.LEVEL1)
       }
       if (gamepad.A) {
-        this.scene.start('level-two')
+        this.music.stop()
+        this.scene.start(SCENES.LEVEL2)
       }
       if (gamepad.X) {
-        this.scene.start('level-three')
+        this.music.stop()
+        this.scene.start(SCENES.LEVEL3)
+      }
+      if (gamepad.Y) {
+        this.music.stop()
+      }
+      if (gamepad.R1) {
+        console.log('gamepad', gamepad)
       }
     }
   }
