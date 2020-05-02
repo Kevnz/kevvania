@@ -42,40 +42,7 @@ export default class BaseScene extends Phaser.Scene {
     this.enemies.add(h)
   }
 
-  preload() {
-    this.load.spritesheet(PLAYER_KEY, 'assets/images/entities/HeroKnight.png', {
-      frameWidth: 100,
-      frameHeight: 55,
-    })
-    this.load.spritesheet(
-      ENEMY_KEYS.SKELETON,
-      'assets/images/entities/skeleton-dark.png',
-      {
-        frameWidth: 44,
-        frameHeight: 52,
-      }
-    )
-    this.load.spritesheet(
-      ENEMY_KEYS.SKELETON_BOSS,
-      'assets/images/entities/skeleton-large.png',
-      {
-        frameWidth: 44 * 3,
-        frameHeight: 52 * 3,
-      }
-    )
-    this.load.spritesheet(
-      ENEMY_KEYS.HELLCAT,
-      'assets/images/entities/hell-cat.png',
-      {
-        frameWidth: 96,
-        frameHeight: 53,
-      }
-    )
-    this.load.spritesheet(ENEMY_KEYS.DIE, 'assets/images/entities/death.png', {
-      frameWidth: 44,
-      frameHeight: 52,
-    })
-  }
+  preload() { }
 
   playerHit(player, enemy) {
     console.info('enemy hit points', enemy.HIT_POINTS)
@@ -165,6 +132,23 @@ export default class BaseScene extends Phaser.Scene {
           this.scene.launch('pause-scene', { pausedScene: this.scene.key })
           this.scene.pause()
         }
+      },
+      this
+    )
+    this.events.on(
+      'pause',
+      function () {
+        console.log('Scene paused', this)
+        this.music.pause()
+      },
+      this
+    )
+
+    this.events.on(
+      'resume',
+      function () {
+        console.log('Scene A resumed')
+        this.music.resume()
       },
       this
     )
