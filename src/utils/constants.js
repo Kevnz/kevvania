@@ -19,7 +19,7 @@ export const MAIN_CASTLE = 'main-castle'
 export const MAIN_CASTLE_DECORATIVE = 'decorative'
 export const MAIN_CASTLE_ENVIRONMENT = 'environment-objects'
 export const MAIN_CASTLE_WOOD = 'wood'
-
+export const PLAYER_KEY = 'player'
 export const DEATH_ANIM_KEY = 'please-die'
 
 export const ENEMY_KEYS = {
@@ -40,4 +40,18 @@ export const ENEMY_HP = {
   [ENEMY_KEYS.FLAMING_SKULL]: 2,
   [ENEMY_KEYS.BANDIT]: 3,
   [ENEMY_KEYS.SKELETON_WARRIOR]: 4,
+}
+
+export const MUSIC_SCENES = {
+  INTRO: 'intro-audio',
+  LEVEL1: 'level-1-audio',
+  LEVEL2: 'level-2-audio',
+  LEVEL3: 'level-3-audio',
+  ENDING: 'ending-audio',
+}
+
+export const SCENES = {
+  LEVEL1: 'level-1',
+  LEVEL2: 'level-2',
+  LEVEL3: 'level-3',
 }
