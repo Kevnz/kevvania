@@ -17,7 +17,8 @@ export const PLAYER_ANIMS = {
 export default class Player extends Phaser.GameObjects.Sprite {
   constructor(scene, x, y) {
     super(scene, x, y, PLAYER_KEY)
-
+    this.BEING_HIT = false
+    this.HIT_POINTS = 20
     scene.physics.world.enableBody(this)
     this.body.setCollideWorldBounds(true)
     this.body.setSize(34, 48, true)
@@ -90,6 +91,10 @@ export default class Player extends Phaser.GameObjects.Sprite {
       ) {
         this.anims.play(PLAYER_ANIMS.IDLE, true)
         this.body.setSize(34, 48, true)
+        this.BEING_HIT = false
+      } else if (event.key === PLAYER_ANIMS.HIT) {
+        this.BEING_HIT = false
+      } else {
       }
     }
 
@@ -150,6 +155,10 @@ export default class Player extends Phaser.GameObjects.Sprite {
         this.body.setVelocityX(0)
         this.anims.play(PLAYER_ANIMS.ATTACK2, true)
         this.body.setSize(80)
+      }
+
+      if (gamepad.X) {
+        this.body.setVelocityY(-100)
       }
     }
   }
