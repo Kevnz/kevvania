@@ -68,7 +68,7 @@ export default class HellCat extends Phaser.GameObjects.Sprite {
   ifPlayerIsComing(distance, player) {
     if (distance < 350 && distance > 250 && this.x > player.x) {
       this.body.setVelocityX(-45)
-    } else if (distance < 350 && distance > 250 && this.x < this.player.x) {
+    } else if (distance < 350 && distance > 250 && this.x < player.x) {
       this.body.setVelocityX(45)
       this.body.flipX = true
     }
