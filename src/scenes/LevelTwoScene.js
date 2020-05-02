@@ -15,12 +15,13 @@ import {
   ENEMY_KEYS,
   DEATH_ANIM_KEY,
   CASTLE_EXTERIOR_KEY,
+  SCENES,
 } from '../utils/constants'
 import BaseScene from './BaseScene'
 
 export default class LevelTwoScene extends BaseScene {
   constructor() {
-    super('level-two')
+    super(SCENES.LEVEL2)
     this.enemies = null
   }
 
@@ -41,55 +42,6 @@ export default class LevelTwoScene extends BaseScene {
 
   preload() {
     console.info('level 2 preload')
-    this.load.image(MAIN_BACKGROUND, 'assets/images/backgrounds/moon.png')
-    this.load.image(
-      CEMETERY_OBJECTS_KEY,
-      'assets/images/tiles/cemetery-objects.png'
-    )
-    this.load.image(STONE_ANGEL_KEY, 'assets/images/tiles/stone-angel.png')
-    this.load.image(CHURCH_TILES_KEY, 'assets/images/tiles/church-tileset.png')
-    this.load.image(ENV_TILES_KEY, 'assets/images/tiles/env-tiles.png')
-    this.load.image(
-      TWILIGHT_BW_TILES,
-      'assets/images/tiles/twilight-bw-tiles.png'
-    )
-    this.load.image(
-      CASTLE_EXTERIOR_KEY,
-      'assets/images/tiles/castle_tileset_part1.png'
-    )
-
-    this.load.tilemapTiledJSON(LEVEL_2_MAP_KEY, 'assets/tiled/level-2-a.json')
-
-    this.load.spritesheet(PLAYER_KEY, 'assets/images/entities/HeroKnight.png', {
-      frameWidth: 100,
-      frameHeight: 55,
-    })
-
-    this.load.spritesheet(
-      ENEMY_KEYS.FLAMING_SKULL,
-      'assets/images/entities/flaming-skull.png',
-      {
-        frameWidth: 64,
-        frameHeight: 64,
-      }
-    )
-
-    this.load.spritesheet(ENEMY_KEYS.DIE, 'assets/images/entities/death.png', {
-      frameWidth: 44,
-      frameHeight: 52,
-    })
-
-    this.load.atlas(
-      ENEMY_KEYS.SKELETON_WARRIOR,
-      'assets/images/entities/skeleton-sword-0.png',
-      'assets/images/entities/skeleton-sword.json'
-    )
-
-    this.load.atlas(
-      ENEMY_KEYS.BANDIT,
-      'assets/images/entities/heav-bandit-tp.png',
-      'assets/images/entities/heav-bandit-tp.json'
-    )
 
     // sprite
   }
@@ -223,7 +175,7 @@ export default class LevelTwoScene extends BaseScene {
   update() {
     if (this.player.x > 256 * 16 - 100) {
       console.info('bounds???')
-      this.scene.start('change-scene')
+      this.scene.start('change-scene', { nextScene: SCENES.LEVEL3 })
     }
 
     if (this.cursors.up.isDown && this.player.body.onFloor()) {
