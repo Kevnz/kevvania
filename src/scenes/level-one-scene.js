@@ -9,66 +9,18 @@ import {
   MAP_KEY,
   ENEMY_KEYS,
   DEATH_ANIM_KEY,
+  SCENES,
 } from '../utils/constants'
 import BaseScene from './BaseScene'
 
 export default class LevelOneScene extends BaseScene {
   constructor() {
-    super('level-one')
+    super(SCENES.LEVEL1)
     this.background = null
     this.enemies = null
   }
 
-  preload() {
-    this.load.image(MAIN_BACKGROUND, 'assets/images/backgrounds/moon.png')
-    console.info(`Loaded ${MAIN_BACKGROUND}`)
-    this.load.image(
-      CEMETERY_OBJECTS_KEY,
-      'assets/images/tiles/cemetery-objects.png'
-    )
-    console.info(`Loaded ${CEMETERY_OBJECTS_KEY}`)
-    this.load.image(
-      CEMETERY_TILES_KEY,
-      'assets/images/tiles/cemetery-tileset.png'
-    )
-    console.info(`Loaded ${CEMETERY_TILES_KEY}`)
-    this.load.tilemapTiledJSON(MAP_KEY, 'assets/tiled/intro.json')
-    console.info(`Loaded ${MAP_KEY}`)
-    this.load.spritesheet(PLAYER_KEY, 'assets/images/entities/HeroKnight.png', {
-      frameWidth: 100,
-      frameHeight: 55,
-    })
-    console.info(`Loaded ${PLAYER_KEY}`)
-    this.load.spritesheet(
-      ENEMY_KEYS.SKELETON,
-      'assets/images/entities/skeleton.png',
-      {
-        frameWidth: 44,
-        frameHeight: 52,
-      }
-    )
-    console.info(`Loaded ${ENEMY_KEYS.SKELETON}`)
-    this.load.spritesheet(
-      ENEMY_KEYS.SKELETON_BOSS,
-      'assets/images/entities/skeleton-large.png',
-      {
-        frameWidth: 44 * 3,
-        frameHeight: 52 * 3,
-      }
-    )
-    this.load.spritesheet(
-      ENEMY_KEYS.HELLCAT,
-      'assets/images/entities/hell-cat.png',
-      {
-        frameWidth: 96,
-        frameHeight: 53,
-      }
-    )
-    this.load.spritesheet(ENEMY_KEYS.DIE, 'assets/images/entities/death.png', {
-      frameWidth: 44,
-      frameHeight: 52,
-    })
-  }
+  preload() { }
 
   create() {
     super.create()
@@ -159,12 +111,17 @@ export default class LevelOneScene extends BaseScene {
       null,
       this
     )
+
+    this.music = this.sound.add('level-1-audio')
+
+    this.music.play()
+    this.music.setVolume(0.5)
   }
 
   update() {
     if (this.player.x > 256 * 16 - 100) {
       console.info('bounds???')
-      this.scene.start('change-scene')
+      this.scene.start('change-scene', { nextScene: SCENES.LEVEL2 })
     }
 
     if (this.cursors.up.isDown && this.player.body.onFloor()) {
