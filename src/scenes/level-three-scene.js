@@ -18,12 +18,13 @@ import {
   MAIN_CASTLE_DECORATIVE,
   MAIN_CASTLE_ENVIRONMENT,
   MAIN_CASTLE_WOOD,
+  SCENES,
 } from '../utils/constants'
 import BaseScene from './BaseScene'
 
 export default class LevelOneScene extends BaseScene {
   constructor() {
-    super('level-three')
+    super(SCENES.LEVEL3)
     this.background = null
     this.enemies = null
   }
